@@ -22,11 +22,11 @@ export const sendOTPVerificationEmail = async (
 ) => {
   try {
     const otp = generateOTP();
-    const subject = "Your OTP Code";
+    const subject = "VerifY OTP";
     const message = `Use this code to verify your email. It expires in 5 minutes.`;
 
     const mailOptions = {
-      from: process.env.EMAIL_SENDER,
+      from: `"MediCare" <${process.env.EMAIL_SENDER}>`,
       to: email,
       subject,
       html: `

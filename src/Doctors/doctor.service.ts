@@ -7,6 +7,7 @@ import { TDoctorInsert, TDoctorSelect, doctorsTable } from "../drizzle/schema";
 export const getDoctorsServices = async():Promise<TDoctorSelect[] | null> => {
     return await db.query.doctorsTable.findMany({
     with: {
+      user:true,
       appointments: true,
       prescriptions: true,
     },
@@ -18,6 +19,7 @@ export const getDoctorByIdServices = async(doctorId: number):Promise<TDoctorSele
     return await db.query.doctorsTable.findFirst({
     where: eq(doctorsTable.doctorId, doctorId),
     with: {
+      user:true,
       appointments: true,
       prescriptions: true,
     },

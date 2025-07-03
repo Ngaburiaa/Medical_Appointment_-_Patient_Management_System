@@ -8,13 +8,14 @@ import { paymentRouter } from './Payments/payment.route';
 import { complaintRouter } from './Complaints/complaints.route';
 import { doctorRouter } from './Doctors/doctor.route';
 import { appointmentRouter } from './Appointments/appointments.route';
-import { connectRedis } from "./emails/redisClient";
+import cors from "cors"
 
 
 const app:Application = express(); 
 
 
 app.use(express.json()); 
+app.use(cors())
 app.use(express.urlencoded({ extended: true }));
 app.use(logger);
 app.use(rateLimiterMiddleware);

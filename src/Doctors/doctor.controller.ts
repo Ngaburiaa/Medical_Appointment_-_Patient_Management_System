@@ -40,8 +40,8 @@ export const getDoctorById = async (req: Request, res: Response) => {
 
 // Create new doctor
 export const createDoctor = async (req: Request, res: Response) => {
-  const { firstName, lastName, contactPhone, specialization, availableDays, userId } = req.body;
-  if (!firstName || !lastName || !contactPhone || !specialization || !availableDays || !userId) {
+  const {specialization,bio, availableDays, userId } = req.body;
+  if (!specialization || !availableDays || !userId || !bio) {
      res.status(400).json({ error: "All fields are required" });
   }
 
@@ -52,14 +52,7 @@ export const createDoctor = async (req: Request, res: Response) => {
            res.status(400).json({error:parseResult.error.issues})   
            return
         }
-    const message = await createDoctorServices({
-      firstName,
-      lastName,
-      contactPhone,
-      specialization,
-      availableDays,
-      userId,
-    });
+    const message = await createDoctorServices({ specialization,bio, availableDays, userId, });
      res.status(201).json({ message });
   } catch (error: any) {
      res.status(500).json({ error: error.message || "Failed to create doctor" });
@@ -73,12 +66,11 @@ export const updateDoctor = async (req: Request, res: Response) => {
      res.status(400).json({ error: "Invalid doctor ID" });
   }
 
-  const { firstName, lastName, contactPhone, specialization, availableDays } = req.body;
+  const {bio, specialization, availableDays } = req.body;
 
   if (
-    !firstName &&
-    !lastName &&
-    !contactPhone &&
+    
+    !bio &&
     !specialization &&
     !availableDays
   ) {
@@ -87,9 +79,8 @@ export const updateDoctor = async (req: Request, res: Response) => {
 
   try {
     const message = await updateDoctorServices(doctorId, {
-      ...(firstName && { firstName }),
-      ...(lastName && { lastName }),
-      ...(contactPhone && { contactPhone }),
+     
+      ...(bio && { bio }),
       ...(specialization && { specialization }),
       ...(availableDays && { availableDays }),
     });

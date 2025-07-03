@@ -41,9 +41,9 @@ export const getAppointmentById = async (req: Request, res: Response) => {
 
 // Create appointment
 export const createAppointment = async (req: Request, res: Response) => {
-  const { userId, doctorId, appointmentDate, timeSlot, totalAmount, appointmentStatus } = req.body;
+  const { userId, doctorId, timeSlot, totalAmount } = req.body;
 
-  if (!userId || !doctorId || !appointmentDate || !timeSlot || !totalAmount) {
+  if (!userId || !doctorId || !timeSlot || !totalAmount) {
      res.status(400).json({ error: "Required fields are missing" });
   }
 
@@ -57,11 +57,9 @@ export const createAppointment = async (req: Request, res: Response) => {
     const message = await createAppointmentServices({
       userId,
       doctorId,
-      appointmentDate,
-      timeSlot,
+        timeSlot,
       totalAmount,
-      appointmentStatus,
-    });
+         });
     res.status(201).json({ message });
   } catch (error: any) {
     res.status(500).json({ error: error.message || "Failed to create appointment" });

@@ -36,19 +36,16 @@ async function seed() {
   // === DOCTORS ===
   const doctors: TDoctorInsert[] = [
     {
-        firstName: "Alice",
-        lastName: "Ngugi",
+       
         specialization: "Pediatrics",
-        contactPhone: "0722334455",
-        availableDays: "Mon,Wed,Fri",
+         availableDays: "Mon,Wed,Fri",
+        bio:"Harvard-trained specialist in cardiovascular diseases",
         userId: insertedUsers[0].userId
     },
     {
-        firstName: "Bob",
-        lastName: "Omondi",
         specialization: "Dentistry",
-        contactPhone: "0733445566",
         availableDays: "Tue,Thu",
+        bio:"Child health expert with focus on preventive care",
         userId: insertedUsers[1].userId
     },
   ];

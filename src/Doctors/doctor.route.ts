@@ -7,10 +7,10 @@ export const doctorRouter = Router();
 
 
 // Get all doctors
-doctorRouter.get('/doctors',adminRoleAuth, getDoctors);
+doctorRouter.get('/doctors', getDoctors);
 
 // Get doctor by ID
-doctorRouter.get('/doctors/:id',allRolesAuth, getDoctorById);
+doctorRouter.get('/doctors/:id', getDoctorById);
 
 // Create a new doctor
 doctorRouter.post('/doctors',allRolesAuth, createDoctor);

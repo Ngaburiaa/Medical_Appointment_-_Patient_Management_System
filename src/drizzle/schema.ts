@@ -5,6 +5,8 @@ import { relations } from "drizzle-orm";
 // Enums
 export const roleEnum = pgEnum("userType", ['user', 'admin', 'doctor']);
 
+export const paymentStatusEnum = pgEnum("paymentStatusEnum ", [ "Pending","Confirmed", "Cancelled"]);
+
 export const appointmentStatusEnum = pgEnum("appointment_status_enum", [ "Pending","Confirmed", "Cancelled"]);
 
 export const complaintStatusEnum = pgEnum("complaint_status_enum", ["Open","In Progress","Resolved", "Closed",]);
@@ -16,6 +18,7 @@ export const usersTable = pgTable("usersTable", {
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   contactPhone: text("contact_phone").notNull(),
+  profileURL:text("profile"),
   address: text("address"),
   userType: roleEnum("userType").default('user'),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -26,10 +29,8 @@ export const usersTable = pgTable("usersTable", {
 export const doctorsTable = pgTable("doctorsTable", {
   doctorId: serial("doctor_id").primaryKey(),
   userId:integer("user_id").notNull().references(() => usersTable.userId, { onDelete: "cascade" }),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
   specialization: text("specialization").notNull(),
-  contactPhone: text("contact_phone").notNull(),
+  bio:text("bio").notNull(),
   availableDays: text("available_days"), 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),

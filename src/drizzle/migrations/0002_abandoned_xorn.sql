@@ -1,0 +1,1 @@
+ALTER TABLE "doctorsTable" ALTER COLUMN "bio" DROP NOT NULL;

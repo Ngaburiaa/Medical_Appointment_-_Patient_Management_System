@@ -1,0 +1,1 @@
+ALTER TABLE "doctorsTable" ALTER COLUMN "bio" SET NOT NULL;

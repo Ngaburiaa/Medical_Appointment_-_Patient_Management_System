@@ -8,6 +8,34 @@
       "when": 1751289632015,
       "tag": "0000_youthful_dreaming_celestial",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1751536482594,
+      "tag": "0001_icy_magneto",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1751536817352,
+      "tag": "0002_abandoned_xorn",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1751536975553,
+      "tag": "0003_crazy_timeslip",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1751537667485,
+      "tag": "0004_typical_moonstone",
+      "breakpoints": true
     }
   ]
 }
