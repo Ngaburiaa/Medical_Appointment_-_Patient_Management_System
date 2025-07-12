@@ -7,7 +7,7 @@ export const appointmentRouter = Router();
 
 
 // Get all appointments
-appointmentRouter.get('/appointments',adminRoleAuth, getAppointments);
+appointmentRouter.get('/appointments', getAppointments);
 
 // Get appointment by ID
 appointmentRouter.get('/appointments/:id',allRolesAuth, getAppointmentById);

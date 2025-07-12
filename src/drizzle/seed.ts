@@ -1,10 +1,10 @@
-import { db } from "./db"; // adjust path if needed
+import { db } from "./db"; 
 import {
   usersTable, doctorsTable, appointmentsTable,
   prescriptionsTable, paymentsTable, complaintsTable,
   TUserInsert, TDoctorInsert, TAppointmentInsert,
   TPrescriptionInsert, TPaymentInsert, TComplaintInsert
-} from "./schema"; // adjust path to your schema
+} from "./schema"; 
 
 // Utility: format Date to 'YYYY-MM-DD'
 const formatDate = (date: Date) => date.toISOString().split("T")[0];

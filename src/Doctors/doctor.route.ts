@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createDoctor, deleteDoctor, getDoctorById, getDoctors, updateDoctor } from "./doctor.controller";
+import { createDoctor, deleteDoctor, getDoctorById, getDoctors, updateDoctor} from "./doctor.controller";
 import { allRolesAuth, bothRolesAuth,adminRoleAuth } from "../middleware/bearAuth";
 
 
@@ -8,6 +8,7 @@ export const doctorRouter = Router();
 
 // Get all doctors
 doctorRouter.get('/doctors', getDoctors);
+
 
 // Get doctor by ID
 doctorRouter.get('/doctors/:id', getDoctorById);

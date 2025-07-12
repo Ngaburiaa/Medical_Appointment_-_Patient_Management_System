@@ -54,13 +54,7 @@ export const createAppointment = async (req: Request, res: Response) => {
             res.status(400).json({error:parseResult.error.issues})   
             return
          }
-    const message = await createAppointmentServices({
-      userId,
-      doctorId,
-        timeSlot,
-      totalAmount,
-         });
-    res.status(201).json({ message });
+    const message = await createAppointmentServices({userId,doctorId,timeSlot,totalAmount,});res.status(201).json({ message });
   } catch (error: any) {
     res.status(500).json({ error: error.message || "Failed to create appointment" });
   }

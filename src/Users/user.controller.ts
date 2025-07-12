@@ -3,6 +3,7 @@ import { createUserServices, deleteUserServices, getUserByIdServices, getUsersSe
 
 //Business logic for user-related operations
 
+
 export const getUsers = async (req: Request, res: Response) => {
     try {
         const allUsers = await getUsersServices();

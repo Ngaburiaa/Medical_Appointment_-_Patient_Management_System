@@ -7,6 +7,9 @@ import {
   updateDoctorServices,
 } from "../Doctors/doctor.service";
 import { DoctorValidator } from "../validation/doctors.validator";
+import { doctorsTable } from "../drizzle/schema";
+import { db } from "../drizzle/db";
+import { eq } from "drizzle-orm";
 
 // Get all doctors
 export const getDoctors = async (req: Request, res: Response) => {

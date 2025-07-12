@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import {db} from "../drizzle/db";
-import { TUserInsert, TUserSelect, usersTable } from "../drizzle/schema";
+import { doctorsTable, TUserInsert, TUserSelect, usersTable } from "../drizzle/schema";
 
 
 //Register a new user
@@ -38,3 +38,14 @@ export const updateUserPasswordService = async (email: string, newPassword: stri
     
     return "Password updated successfully";
 }
+
+export const getDoctorByUserIdService = async (userId: number) => {
+  return await db.query.doctorsTable.findFirst({
+    where: eq(doctorsTable.userId, userId),
+    with: {
+      appointments: true,
+      prescriptions: true,
+      user: true,
+    },
+  });
+};

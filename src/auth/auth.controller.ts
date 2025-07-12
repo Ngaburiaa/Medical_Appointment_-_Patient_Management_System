@@ -1,6 +1,6 @@
 
 import { Request, Response } from "express";
-import { createUserServices, getUserByEmailService, getUserByPhoneService, updateUserPasswordService } from "./auth.service";
+import { createUserServices, getDoctorByUserIdService, getUserByEmailService, getUserByPhoneService, updateUserPasswordService } from "./auth.service";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { sendNotificationEmail } from "../emails/mailer";
@@ -50,48 +50,62 @@ user.password=hashedPassword
 }
 }
 
-//Login a user
-export const loginUser=async(req:Request,res:Response)=>{
-    try {
-        const parseResult=UserLoginValidator.safeParse(req.body)
-        if(!parseResult.success){
-            res.status(400).json({error:parseResult.error.issues})
-            return
-        }
 
-        const {email,password}=parseResult.data
-
-        const user =await getUserByEmailService(email)
-
-        if(!user){
-            res.status(404).json({error:"User not found"})
-            return
-        }
-
-        const isMatch=bcrypt.compareSync(password,user.password)
-
-        if(!isMatch){
-            res.status(200).json({error:"Invalid password"})
-            return
-        }
-
-       let payload ={
-            userId: user.userId,
-            email: user.email,
-            userType: user.userType,
-            exp: Math.floor(Date.now() / 1000) + (60 * 60) // Token expires in 1 hour
-        }
-
-        let secret =process.env.JWT_SECRET as string
-        const token=jwt.sign(payload,secret)
-
-        res.status(200).json({token,userId:user.userId,userName:user.firstName, email:user.email , userType:user.userType})
-        
-    } catch (error) {
-        res.status(500).json({error:"Failed to login user"})
-        
+export const loginUser = async (req: Request, res: Response) => {
+  try {
+    const parseResult = UserLoginValidator.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({ error: parseResult.error.issues });
     }
-}
+
+    const { email, password } = parseResult.data;
+
+    const user = await getUserByEmailService(email);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const isMatch = bcrypt.compareSync(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid password" });
+    }
+
+    const payload = {
+      userId: user.userId,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      address: user.address,
+      userType: user.userType,
+       exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 //expires after 1 week
+    };
+
+    const secret = process.env.JWT_SECRET as string;
+    const token = jwt.sign(payload, secret);
+
+    // ✅ If doctor, include doctor data
+    let doctor = null;
+    if (user.userType === "doctor") {
+      doctor = await getDoctorByUserIdService(user.userId);
+    }
+
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      userId: user.userId,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      address: user.address,
+      email: user.email,
+      userType: user.userType,
+      doctor, 
+       });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ error: "Failed to login user" });
+  }
+};
+
 
 
 //Password Reset link
@@ -242,7 +256,7 @@ export const verifyLoginOtp = async (req: Request, res: Response) => {
       token,
       userId: user.userId,
       userName: user.firstName,
-      email: user.email,
+       email: user.email,
       userType: user.userType,
     });
   } catch (error: any) {

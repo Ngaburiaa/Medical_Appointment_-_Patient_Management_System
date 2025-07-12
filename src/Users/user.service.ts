@@ -14,6 +14,7 @@ export const getUsersServices = async():Promise<TUserSelect[] | null> => {
   });
 }
 
+
 //Get user by ID
 export const getUserByIdServices = async(userId: number):Promise<TUserSelect | undefined> => {
       return await db.query.usersTable.findFirst({

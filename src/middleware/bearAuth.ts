@@ -10,7 +10,8 @@ declare global {
 }
 
 type DecodedToken = {
-    userId: string;
+    // userId: string;
+    userId:number
     email: string;
     userType: string;
     exp?: number;

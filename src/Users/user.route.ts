@@ -8,7 +8,6 @@ export const userRouter = Router();
 
 // Get all users
 userRouter.get('/users',adminRoleAuth, getUsers);
-
 // Get user by ID
 userRouter.get('/users/:id',allRolesAuth, getUserById);
 
