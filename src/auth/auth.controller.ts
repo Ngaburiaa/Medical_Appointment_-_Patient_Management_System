@@ -53,21 +53,24 @@ user.password=hashedPassword
 
 export const loginUser = async (req: Request, res: Response) => {
   try {
-    const parseResult = UserLoginValidator.safeParse(req.body);
+     const parseResult = UserLoginValidator.safeParse(req.body);
     if (!parseResult.success) {
-      return res.status(400).json({ error: parseResult.error.issues });
+       res.status(400).json({ error: parseResult.error.issues });
+       return
     }
 
     const { email, password } = parseResult.data;
 
     const user = await getUserByEmailService(email);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      res.status(404).json({ error: "User not found" });
+      return 
     }
 
     const isMatch = bcrypt.compareSync(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ error: "Invalid password" });
+      res.status(401).json({ error: "Invalid password" });
+       return
     }
 
     const payload = {
@@ -89,7 +92,7 @@ export const loginUser = async (req: Request, res: Response) => {
       doctor = await getDoctorByUserIdService(user.userId);
     }
 
-    return res.status(200).json({
+   res.status(200).json({
       message: "Login successful",
       token,
       userId: user.userId,
@@ -100,9 +103,11 @@ export const loginUser = async (req: Request, res: Response) => {
       userType: user.userType,
       doctor, 
        });
+        
   } catch (error) {
     console.error("Login error:", error);
-    return res.status(500).json({ error: "Failed to login user" });
+    res.status(500).json({ error: "Failed to login user" });
+    return 
   }
 };
 

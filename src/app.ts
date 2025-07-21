@@ -7,6 +7,7 @@ import { prescriptionRouter } from './Prescriptions/prescription.route';
 import { paymentRouter } from './Payments/payment.route';
 import { complaintRouter } from './Complaints/complaints.route';
 import { doctorRouter } from './Doctors/doctor.route';
+import{ prescriptionItemsRouter} from './PrescriptionItems/prescriptionItems.route'
 import { appointmentRouter } from './Appointments/appointments.route';
 import cors from "cors"
 
@@ -33,6 +34,7 @@ app.use('/api',paymentRouter)
 app.use('/api',complaintRouter)
 app.use('/api',doctorRouter)
 app.use('/api',appointmentRouter)
+app.use('/api',prescriptionItemsRouter)
 
 
 export default app

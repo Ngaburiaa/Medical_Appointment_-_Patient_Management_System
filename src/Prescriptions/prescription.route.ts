@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createPrescription, deletePrescription, getPrescriptionById, getPrescriptions, updatePrescription } from "./prescription.controller";
+import { createPrescription, deletePrescription, getPrescriptionById, getPrescriptions, getPrescriptionsByUserIdController, updatePrescription } from "./prescription.controller";
 import { allRolesAuth, bothRolesAuth,adminRoleAuth } from "../middleware/bearAuth";
 
 
@@ -7,10 +7,13 @@ export const prescriptionRouter = Router();
 
 
 // Get all prescriptions
-prescriptionRouter.get('/prescriptions',adminRoleAuth, getPrescriptions)
+prescriptionRouter.get('/prescriptions', getPrescriptions)
+
+prescriptionRouter.get("/user/:userId", getPrescriptionsByUserIdController);
+
 
 // Get prescription by ID
-prescriptionRouter.get('/prescriptions/:id',allRolesAuth, getPrescriptionById);
+prescriptionRouter.get('/prescriptions/:id', getPrescriptionById);
 
 // Create a new prescription
 prescriptionRouter.post('/prescriptions',allRolesAuth, createPrescription);
@@ -19,4 +22,4 @@ prescriptionRouter.post('/prescriptions',allRolesAuth, createPrescription);
 prescriptionRouter.put('/prescriptions/:id',allRolesAuth,updatePrescription);
 
 // Delete an existing prescription
-prescriptionRouter.delete('/prescriptions/:id',bothRolesAuth,deletePrescription);
+prescriptionRouter.delete('/prescriptions/:id',allRolesAuth,deletePrescription);

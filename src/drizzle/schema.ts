@@ -11,6 +11,8 @@ export const appointmentStatusEnum = pgEnum("appointment_status_enum", [ "Pendin
 
 export const complaintStatusEnum = pgEnum("complaint_status_enum", ["Open","In Progress","Resolved", "Closed",]);
 
+export const prescriptionStatusEnum = pgEnum("prescription_status_enum", [ "active", "expired", "cancelled", "refilled"]);
+
 export const usersTable = pgTable("usersTable", {
   userId: serial("user_id").primaryKey(),
   firstName: text("firstname").notNull(),
@@ -54,10 +56,27 @@ export const prescriptionsTable = pgTable("prescriptionsTable", {
   appointmentId: integer("appointment_id").notNull().references(() => appointmentsTable.appointmentId, { onDelete: "cascade" }),
   doctorId: integer("doctor_id").notNull().references(() => doctorsTable.doctorId, { onDelete: "cascade" }),
   patientId: integer("patient_id").notNull().references(() => usersTable.userId, { onDelete: "cascade" }),
+  diagnosis: text("diagnosis"),
   notes: text("notes"),
+  issuedAt: date("issued_at").notNull().defaultNow(),
+  status: prescriptionStatusEnum("status").default("active").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 });
+
+export const prescriptionItemsTable = pgTable("prescriptionItemsTable", {
+  itemId: serial("item_id").primaryKey(),
+  prescriptionId: integer("prescription_id").notNull().references(() => prescriptionsTable.prescriptionId, { onDelete: "cascade" }),
+  drugName: text("drug_name").notNull(),
+  dosage: text("dosage").notNull(),                  
+  route: text("route").notNull(),                    
+  frequency: text("frequency").notNull(),            
+  duration: text("duration").notNull(),             
+  instructions: text("instructions"),
+  substitutionAllowed: integer("substitution_allowed").default(0).notNull(), 
+});
+
+
 
 
 export const paymentsTable = pgTable("paymentsTable", {
@@ -118,7 +137,7 @@ export const appointmentsTableRelations = relations(appointmentsTable, ({ one, m
   complaints: many(complaintsTable),
 }));
 
-export const prescriptionsTableRelations = relations(prescriptionsTable, ({ one }) => ({
+export const prescriptionsTableRelations = relations(prescriptionsTable, ({ one, many }) => ({
   appointment: one(appointmentsTable, {
     fields: [prescriptionsTable.appointmentId],
     references: [appointmentsTable.appointmentId],
@@ -131,7 +150,16 @@ export const prescriptionsTableRelations = relations(prescriptionsTable, ({ one 
     fields: [prescriptionsTable.patientId],
     references: [usersTable.userId],
   }),
+  items: many(prescriptionItemsTable),
 }));
+
+export const prescriptionItemsTableRelations = relations(prescriptionItemsTable, ({ one }) => ({
+  prescription: one(prescriptionsTable, {
+    fields: [prescriptionItemsTable.prescriptionId],
+    references: [prescriptionsTable.prescriptionId],
+  }),
+}));
+
 
 export const paymentsTableRelations = relations(paymentsTable, ({ one }) => ({
   appointment: one(appointmentsTable, {
@@ -165,6 +193,10 @@ export type TAppointmentSelect = typeof appointmentsTable.$inferSelect;
 
 export type TPrescriptionInsert = typeof prescriptionsTable.$inferInsert;
 export type TPrescriptionSelect = typeof prescriptionsTable.$inferSelect;
+
+export type TPrescriptionItemInsert = typeof prescriptionItemsTable.$inferInsert;
+export type TPrescriptionItemSelect = typeof prescriptionItemsTable.$inferSelect;
+
 
 export type TPaymentInsert = typeof paymentsTable.$inferInsert;
 export type TPaymentSelect = typeof paymentsTable.$inferSelect;

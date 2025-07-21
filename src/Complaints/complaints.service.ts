@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { db } from "../drizzle/db";
+import  db  from "../drizzle/db";
 import { TComplaintInsert, TComplaintSelect, complaintsTable } from "../drizzle/schema";
 
 // Get all complaints
@@ -13,12 +13,47 @@ export const getComplaintsServices = async (): Promise<TComplaintSelect[] | null
 };
 
 // Get complaint by ID
-export const getComplaintByIdServices = async (complaintId: number): Promise<TComplaintSelect | undefined> => {
+// export const getComplaintByIdServices = async (complaintId: number): Promise<TComplaintSelect | undefined> => {
+//   return await db.query.complaintsTable.findFirst({
+//     where: eq(complaintsTable.complaintId, complaintId),
+//     with: {
+//       user: true,
+//       appointment: true,
+//     },
+//   });
+// };
+
+
+export const getComplaintByIdServices = async (
+  complaintId: number
+): Promise<TComplaintSelect | undefined> => {
   return await db.query.complaintsTable.findFirst({
     where: eq(complaintsTable.complaintId, complaintId),
     with: {
       user: true,
-      appointment: true,
+
+      appointment: {
+        with: {
+                   doctor: {
+            with: {
+              user: true, 
+            },
+          },
+
+          prescription: {
+            with: {
+              doctor: {
+                with: {
+                  user: true,
+                },
+              },
+              patient: true,
+              items: true,
+              appointment: true,
+            },
+          },
+        },
+      },
     },
   });
 };

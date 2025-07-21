@@ -5,6 +5,7 @@ import {
   getPrescriptionByIdServices,
   getPrescriptionsServices,
   updatePrescriptionServices,
+  getPrescriptionsByUserIdService 
 } from "../Prescriptions/prescriptions.service";
 import { PrescriptionValidator } from "../validation/prescription.vaidator";
 
@@ -18,6 +19,20 @@ export const getPrescriptions = async (req: Request, res: Response) => {
     res.status(200).json(prescriptions);
   } catch (error: any) {
     res.status(500).json({ error: error.message || "Failed to fetch prescriptions" });
+  }
+};
+
+
+
+
+export const getPrescriptionsByUserIdController = async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+  try {
+    const prescriptions = await getPrescriptionsByUserIdService(userId);
+    res.json(prescriptions);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch prescriptions for user" });
   }
 };
 
@@ -40,31 +55,73 @@ export const getPrescriptionById = async (req: Request, res: Response) => {
 };
 
 // Create prescription
-export const createPrescription = async (req: Request, res: Response) => {
-  const { appointmentId, doctorId, patientId, notes } = req.body;
+// export const createPrescription = async (req: Request, res: Response) => {
+//   const { appointmentId, doctorId, patientId, notes,diagnosis } = req.body;
 
-  if (!appointmentId || !doctorId || !patientId) {
-     res.status(400).json({ error: "appointmentId, doctorId, and patientId are required" });
+//   if (!appointmentId || !doctorId || !patientId || !diagnosis || !notes) {
+//     res.status(400).json({ error: "appointmentId, doctorId, and patientId are required" });
+//     return 
+     
+//   }
+
+//   try {
+//      const parseResult=PrescriptionValidator.safeParse(req.body)
+    
+//         if(!parseResult.success){
+//             res.status(400).json({error:parseResult.error.issues})   
+//             return
+//          }
+//     const message = await createPrescriptionServices({
+//       appointmentId,
+//       doctorId,
+//       patientId,
+//       diagnosis,
+//       notes,
+//     });
+//     res.status(201).json({ message });
+//     return;
+//   } catch (error: any) {
+//     res.status(500).json({ error: error.message || "Failed to create prescription" });
+//   }
+// };
+
+export const createPrescription = async (req: Request, res: Response) => {
+  const { appointmentId, doctorId, patientId, notes, diagnosis } = req.body;
+
+  if (!appointmentId || !doctorId || !patientId || !diagnosis || !notes) {
+    res.status(400).json({
+      error: "appointmentId, doctorId, and patientId are required",
+    });
+    return;
   }
 
   try {
-     const parseResult=PrescriptionValidator.safeParse(req.body)
-    
-        if(!parseResult.success){
-            res.status(400).json({error:parseResult.error.issues})   
-            return
-         }
-    const message = await createPrescriptionServices({
+    const parseResult = PrescriptionValidator.safeParse(req.body);
+
+    if (!parseResult.success) {
+      res.status(400).json({ error: parseResult.error.issues });
+      return;
+    }
+
+    const newPrescription = await createPrescriptionServices({
       appointmentId,
       doctorId,
       patientId,
+      diagnosis,
       notes,
     });
-    res.status(201).json({ message });
+
+    res.status(201).json({
+      message: "Prescription created successfully 🎉",
+      prescriptionId: newPrescription.prescriptionId, 
+    });
   } catch (error: any) {
-    res.status(500).json({ error: error.message || "Failed to create prescription" });
+    res.status(500).json({
+      error: error.message || "Failed to create prescription",
+    });
   }
 };
+
 
 // Update prescription
 export const updatePrescription = async (req: Request, res: Response) => {

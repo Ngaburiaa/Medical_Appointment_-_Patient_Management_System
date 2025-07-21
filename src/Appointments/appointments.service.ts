@@ -1,19 +1,46 @@
 import { eq } from "drizzle-orm";
-import { db } from "../drizzle/db";
+import  db  from "../drizzle/db";
 import { TAppointmentInsert, TAppointmentSelect, appointmentsTable } from "../drizzle/schema";
 
 // Get all appointments
+// export const getAppointmentsServices = async (): Promise<TAppointmentSelect[] | null> => {
+//   return await db.query.appointmentsTable.findMany({
+//     with: {
+//       user: true,
+//       doctor: true,
+//       prescription: true,
+//       payments: true,
+//       complaints: true,
+//     },
+//   });
+// };
+
 export const getAppointmentsServices = async (): Promise<TAppointmentSelect[] | null> => {
   return await db.query.appointmentsTable.findMany({
     with: {
-      user: true,
-      doctor: true,
-      prescription: true,
+      doctor: {
+        with: {
+          user: true, // Get the doctor's user info (name, contact)
+        },
+      },
+      user: true, // The patient user
       payments: true,
-      complaints: true,
+      prescription: {
+        with: {
+          items: true,
+          patient: true,
+          doctor: {
+            with: {
+              user: true,
+            },
+          },
+          appointment: true,
+        },
+      },
     },
   });
 };
+
 
 // Get appointment by ID
 export const getAppointmentByIdServices = async (appointmentId: number): Promise<TAppointmentSelect | undefined> => {

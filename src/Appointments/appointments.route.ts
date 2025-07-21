@@ -2,9 +2,7 @@ import { Router } from "express";
 import { createAppointment, deleteAppointment, getAppointmentById, getAppointments, updateAppointment } from "./appointments.controller";
 import { allRolesAuth, bothRolesAuth,adminRoleAuth } from "../middleware/bearAuth";
 
-
 export const appointmentRouter = Router();
-
 
 // Get all appointments
 appointmentRouter.get('/appointments', getAppointments);

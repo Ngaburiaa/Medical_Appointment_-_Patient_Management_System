@@ -59,10 +59,10 @@ export const updateUser = async (req: Request, res: Response) => {
      res.status(400).json({ error: "Invalid user ID" });
   }
 
-  const { firstName, lastName, email, password, contactPhone, address, userType } = req.body;
+  const { firstName, lastName, email, password, contactPhone, address, userType,profileURL } = req.body;
 
   if (
-    !firstName &&!lastName && !email && !password &&  !contactPhone && !address &&  !userType  ) {
+    !firstName &&!lastName && !email && !password &&  !contactPhone && !address &&  !userType && !profileURL  ) {
      res.status(400).json({ error: "At least one field must be provided to update" });
   }
 
@@ -75,6 +75,7 @@ export const updateUser = async (req: Request, res: Response) => {
       ...(contactPhone && { contactPhone }),
       ...(address && { address }),
       ...(userType && { userType }),
+       ...(profileURL && { profileURL}),
     });
     res.status(200).json({ message });
     } catch (error: any) {

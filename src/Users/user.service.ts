@@ -1,6 +1,6 @@
 
 import { eq } from "drizzle-orm";
-import {db} from "../drizzle/db";
+import db from "../drizzle/db";
 import { TUserInsert, TUserSelect, usersTable } from "../drizzle/schema";
 
 //Get all users
@@ -14,18 +14,86 @@ export const getUsersServices = async():Promise<TUserSelect[] | null> => {
   });
 }
 
-
-//Get user by ID
-export const getUserByIdServices = async(userId: number):Promise<TUserSelect | undefined> => {
-      return await db.query.usersTable.findFirst({
+export const getUserByIdServices = async (userId: number): Promise<TUserSelect | undefined> => {
+  return await db.query.usersTable.findFirst({
     where: eq(usersTable.userId, userId),
     with: {
-      appointments: true,
-      prescriptions: true,
+      doctorProfile: {
+        with: {
+          appointments: {
+            with: {
+              user: true,
+              payments: true,
+              prescription: {
+                with: {
+                  items: true,
+                  doctor: {
+                    with: {
+                      user: true,
+                    },
+                  },
+                  patient: true,
+                  appointment: true,
+                },
+              },
+            },
+          },
+          prescriptions: {
+            with: {
+              appointment: true,
+              doctor: {
+                with: {
+                  user: true,
+                },
+              },
+              patient: true,
+              items: true,
+            },
+          },
+        },
+      },
+
+      appointments: {
+        with: {
+          doctor: {
+            with: {
+              user: true,
+            },
+          },
+          payments: true,
+          prescription: {
+            with: {
+              items: true,
+              doctor: {
+                with: {
+                  user: true,
+                },
+              },
+              patient: true,
+              appointment: true,
+            },
+          },
+        },
+      },
+
+      prescriptions: {
+        with: {
+          doctor: {
+            with: {
+              user: true,
+            },
+          },
+          appointment: true,
+          patient: true,
+          items: true,
+        },
+      },
+
       complaints: true,
     },
-  }); 
-}
+  });
+};
+
 
 // Create a new user
 export const createUserServices = async(user: TUserInsert):Promise<string> => {

@@ -1,27 +1,63 @@
 
 import { eq } from "drizzle-orm";
-import {db} from "../drizzle/db";
+import db from "../drizzle/db";
 import { TDoctorInsert, TDoctorSelect, doctorsTable } from "../drizzle/schema";
 
-//Get all doctors
-export const getDoctorsServices = async():Promise<TDoctorSelect[] | null> => {
-    return await db.query.doctorsTable.findMany({
+export const getDoctorsServices = async (): Promise<TDoctorSelect[] | null> => {
+  return await db.query.doctorsTable.findMany({
     with: {
-      user:true,
-      appointments: true,
-      prescriptions: true,
+      user: true, // doctor → user info
+
+      appointments: {
+        with: {
+          user: true,              // patient info
+          payments: true,          // payment status/amount
+        },
+      },
+
+      prescriptions: {
+        with: {
+          patient: true,           // patient info
+          doctor: {
+            with: {
+              user: true,          // doctor user info
+            },
+          },
+          appointment: true,       // appointment details
+          items: true,             // drugs prescribed
+        },
+      },
     },
   });
-}
+};
+
 
 //Get doctor by ID
 export const getDoctorByIdServices = async(doctorId: number):Promise<TDoctorSelect | undefined> => {
     return await db.query.doctorsTable.findFirst({
     where: eq(doctorsTable.doctorId, doctorId),
     with: {
-      user:true,
-      appointments: true,
-      prescriptions: true,
+      user: true, // doctor → user info
+
+      appointments: {
+        with: {
+          user: true,              // patient info
+          payments: true,          // payment status/amount
+        },
+      },
+
+      prescriptions: {
+        with: {
+          patient: true,           // patient info
+          doctor: {
+            with: {
+              user: true,          // doctor user info
+            },
+          },
+          appointment: true,       // appointment details
+          items: true,             // drugs prescribed
+        },
+      },
     },
   });
 }
