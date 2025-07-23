@@ -7,10 +7,7 @@ export const prescriptionRouter = Router();
 
 
 // Get all prescriptions
-prescriptionRouter.get('/prescriptions', getPrescriptions)
-
-prescriptionRouter.get("/user/:userId", getPrescriptionsByUserIdController);
-
+prescriptionRouter.get('/prescriptions',adminRoleAuth, getPrescriptions)
 
 // Get prescription by ID
 prescriptionRouter.get('/prescriptions/:id', getPrescriptionById);

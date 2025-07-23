@@ -3,18 +3,6 @@ import { eq } from "drizzle-orm";
 import  db  from "../drizzle/db";
 import { TPrescriptionInsert, TPrescriptionSelect, prescriptionsTable } from "../drizzle/schema";
 
-// Get all prescriptions
-// export const getPrescriptionsServices = async (): Promise<TPrescriptionSelect[] | null> => {
-//   return await db.query.prescriptionsTable.findMany({
-//     with: {
-//       appointment: true,
-//       doctor: true,
-//       patient: true,
-//       items: true,
-      
-//     },
-//   });
-// };
 
 export const getPrescriptionsServices = async (): Promise<TPrescriptionSelect[] | null> => {
   return await db.query.prescriptionsTable.findMany({
