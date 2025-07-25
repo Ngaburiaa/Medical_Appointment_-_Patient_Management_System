@@ -77,7 +77,7 @@ export const prescriptionItemsTable = pgTable("prescriptionItemsTable", {
 });
 
 
-export const paymentsTable = pgTable("payments", {
+export const paymentsTable = pgTable("paymentsTable", {
   paymentId: serial("payment_id").primaryKey(),
   appointmentId: integer("appointment_id").references(() => appointmentsTable.appointmentId, { onDelete: "cascade" }),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
