@@ -5,7 +5,7 @@ import { relations } from "drizzle-orm";
 // Enums
 export const roleEnum = pgEnum("userType", ['user', 'admin', 'doctor']);
 
-export const paymentStatusEnum = pgEnum("paymentStatusEnum ", [ "Pending","Confirmed", "Cancelled"]);
+export const paymentStatusEnum = pgEnum("paymentStatusEnum", [ "Pending","Confirmed", "Cancelled"]);
 
 export const appointmentStatusEnum = pgEnum("appointment_status_enum", [ "Pending","Confirmed", "Cancelled"]);
 
