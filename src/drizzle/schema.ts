@@ -77,18 +77,22 @@ export const prescriptionItemsTable = pgTable("prescriptionItemsTable", {
 });
 
 
-
-
-export const paymentsTable = pgTable("paymentsTable", {
+export const paymentsTable = pgTable("payments", {
   paymentId: serial("payment_id").primaryKey(),
-  appointmentId: integer("appointment_id").notNull().references(() => appointmentsTable.appointmentId, { onDelete: "cascade" }),
+  appointmentId: integer("appointment_id").references(() => appointmentsTable.appointmentId, { onDelete: "cascade" }),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   paymentStatus: text("payment_status").notNull(),
   transactionId: text("transaction_id").notNull(),
+  checkoutRequestId: text("checkout_request_id"),
+  merchantRequestId: text("merchant_request_id"),
+  payerPhone: text("payer_phone"),
+  resultCode: integer("result_code"),
+  resultDesc: text("result_desc"),
   paymentDate: date("payment_date").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 });
+
 
 export const complaintsTable = pgTable("complaintsTable", {
   complaintId: serial("complaint_id").primaryKey(),

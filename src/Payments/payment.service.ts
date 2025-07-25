@@ -27,6 +27,11 @@ export const createPaymentServices = async (payment: TPaymentInsert): Promise<st
   return "Payment recorded successfully 💰";
 };
 
+export const createMpesaPaymentService = async (payment: TPaymentInsert): Promise<string> => {
+  await db.insert(paymentsTable).values(payment);
+  return "M-Pesa payment recorded successfully 💰";
+};
+
 // Update payment
 export const updatePaymentServices = async (paymentId: number, payment: Partial<TPaymentInsert>): Promise<string> => {
   await db.update(paymentsTable).set(payment).where(eq(paymentsTable.paymentId, paymentId));

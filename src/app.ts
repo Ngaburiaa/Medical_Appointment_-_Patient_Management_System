@@ -10,14 +10,13 @@ import { doctorRouter } from './Doctors/doctor.route';
 import{ prescriptionItemsRouter} from './PrescriptionItems/prescriptionItems.route'
 import { appointmentRouter } from './Appointments/appointments.route';
 import cors from "cors"
+import { mpesaRouter } from "./mpesa/mpesa.route";
 
+const app: Application = express();
 
-const app:Application = express(); 
-
-
-app.use(express.json()); 
-app.use(cors())
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ type: "*/*" }));
+app.use(express.urlencoded({ extended: true })); 
+app.use(cors());
 app.use(logger);
 app.use(rateLimiterMiddleware);
 
@@ -35,6 +34,7 @@ app.use('/api',complaintRouter)
 app.use('/api',doctorRouter)
 app.use('/api',appointmentRouter)
 app.use('/api',prescriptionItemsRouter)
+app.use("/api/mpesa", mpesaRouter);
 
 
 export default app
