@@ -45,29 +45,38 @@ export const createAppointment = async (req: Request, res: Response) => {
 
   if (!userId || !doctorId || !timeSlot || !totalAmount || !appointmentDate) {
     res.status(400).json({ error: "Required fields are missing" });
-    return;
   }
 
   try {
     const parseResult = AppointmentValidator.safeParse(req.body);
     if (!parseResult.success) {
       res.status(400).json({ error: parseResult.error.issues });
-      return;
     }
 
-    const message = await createAppointmentServices({
+    // Create appointment (only returns appointmentId & totalAmount)
+    const newAppointment = await createAppointmentServices({
       userId,
       doctorId,
       timeSlot,
       totalAmount,
-      appointmentDate, // ✅ Critical fix
+      appointmentDate,
     });
 
-    res.status(201).json({ message });
+   
+    res.status(201).json({
+      message: "Appointment created successfully 🎉",
+      appointment: {
+        appointmentId: newAppointment.appointmentId,
+        totalAmount: newAppointment.totalAmount ?? "0.00",
+      },
+    });
   } catch (error: any) {
-    res.status(500).json({ error: error.message || "Failed to create appointment" });
+     res.status(500).json({
+      error: error.message || "Failed to create appointment",
+    });
   }
 };
+
 
 
 // Update appointment

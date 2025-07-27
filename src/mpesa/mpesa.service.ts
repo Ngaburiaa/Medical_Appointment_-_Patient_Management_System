@@ -38,13 +38,13 @@ export const initiateSTKPush = async (
       Password: password,
       Timestamp: timestamp,
       TransactionType: "CustomerPayBillOnline",
-      Amount: amount,
+      Amount: Math.round(amount),
       PartyA: phoneNumber,
       PartyB: SHORTCODE,
       PhoneNumber: phoneNumber,
       CallBackURL: "https://medical-appointment-patient-management.onrender.com/api/mpesa/callback",
-      AccountReference: accountReference,
-      TransactionDesc: "Payment for Service",
+      AccountReference: "MEDICAL",
+      TransactionDesc: "Medical Appointment Payment",
     },
     { headers: { Authorization: `Bearer ${accessToken}` } }
   );
