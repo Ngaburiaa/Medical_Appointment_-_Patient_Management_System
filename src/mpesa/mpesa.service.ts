@@ -48,7 +48,7 @@ export const initiateSTKPush = async (
       PartyA: phoneNumber,
       PartyB: SHORTCODE,
       PhoneNumber: phoneNumber,
-      CallBackURL: "https://yourdomain.com/api/mpesa/callback",
+      CallBackURL: "https://medical-appointment-patient-management.onrender.com/api/mpesa/callback",
       AccountReference: appointmentId, // Primary reference
       TransactionDesc: `Payment for appointment ${appointmentId}`,
     },
