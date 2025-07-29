@@ -26,13 +26,16 @@ export const generatePassword = (timestamp: string): string => {
 export const initiateSTKPush = async (
   phoneNumber: string,
   amount: number,
-  accountReference: string
+  appointmentId: string
 ): Promise<any> => {
-  if (!accountReference) throw new Error("Account reference is required (appointmentId)");
+  if (!appointmentId) throw new Error("Appointment ID is required");
 
   const accessToken = await getAccessToken();
   const timestamp = new Date().toISOString().replace(/[^0-9]/g, "").slice(0, -3);
   const password = generatePassword(timestamp);
+
+  // Encode appointmentId in CheckoutRequestID for fallback
+  const checkoutRequestId = `ws_CO_${timestamp}_${appointmentId}`;
 
   const response = await axios.post(
     `${MPESA_BASE_URL}/mpesa/stkpush/v1/processrequest`,
@@ -45,15 +48,16 @@ export const initiateSTKPush = async (
       PartyA: phoneNumber,
       PartyB: SHORTCODE,
       PhoneNumber: phoneNumber,
-      CallBackURL: "https://medical-appointment-patient-management.onrender.com/api/mpesa/callback",
-      AccountReference: accountReference.toString(), // Ensure string value
-      TransactionDesc: `Payment for appointment ${accountReference}`,
+      CallBackURL: "https://yourdomain.com/api/mpesa/callback",
+      AccountReference: appointmentId, // Primary reference
+      TransactionDesc: `Payment for appointment ${appointmentId}`,
     },
     { headers: { Authorization: `Bearer ${accessToken}` } }
   );
 
   return response.data;
 };
+
 
 // Generate QR Code
 export const generateQRCode = async (

@@ -46,17 +46,18 @@ export const mpesaCallback = async (req: Request, res: Response) => {
   try {
     console.log("M-Pesa Callback Received:", JSON.stringify(req.body, null, 2));
 
-    const callback = req.body.Body?.stkCallback;
-    if (!callback) {
-      console.error("Invalid callback structure:", req.body);
+    // Validate callback structure
+    if (!req.body.Body?.stkCallback) {
+      console.error("Invalid callback structure");
       res.status(400).json({ error: "Invalid callback structure" });
     }
 
+    const callback = req.body.Body.stkCallback;
     const { MerchantRequestID, CheckoutRequestID, ResultCode, ResultDesc, CallbackMetadata } = callback;
 
-    // Validate callback metadata
+    // Validate required fields
     if (!CallbackMetadata?.Item) {
-      console.error("Missing callback metadata:", callback);
+      console.error("Missing callback metadata");
      res.status(400).json({ error: "Missing payment details in callback" });
     }
 
@@ -66,22 +67,43 @@ export const mpesaCallback = async (req: Request, res: Response) => {
       metadata[item.Name] = item.Value;
     });
 
-    // Validate required fields
-    if (!metadata.Amount || !metadata.MpesaReceiptNumber || !metadata.AccountReference) {
+    // Check for minimum required fields
+    if (!metadata.Amount || !metadata.MpesaReceiptNumber) {
       console.error("Missing required payment details:", metadata);
-       res.status(400).json({ error: "Missing required payment details" });
+      res.status(400).json({ error: "Missing required payment details" });
+    }
+
+    // Try to get appointmentId from different possible sources
+    let appointmentId: number | null = null;
+    
+    // 1. First try AccountReference from metadata
+    if (metadata.AccountReference) {
+      appointmentId = Number(metadata.AccountReference);
+    }
+    // 2. Fallback to CheckoutRequestID (extract appointmentId if encoded)
+    else if (CheckoutRequestID) {
+      // Example: CheckoutRequestID format "ws_CO_290720251305258769846063_123" where 123 is appointmentId
+      const parts = CheckoutRequestID.split('_');
+      if (parts.length > 2) {
+        const possibleId = parts[parts.length - 1];
+        appointmentId = Number(possibleId);
+      }
+    }
+
+    if (!appointmentId || isNaN(appointmentId)) {
+      console.error("Could not determine appointmentId from callback");
+      res.status(400).json({ 
+        error: "Could not determine appointment reference",
+        details: {
+          metadata,
+          CheckoutRequestID
+        }
+      });
     }
 
     const amount = metadata.Amount;
     const mpesaReceipt = metadata.MpesaReceiptNumber;
     const phone = metadata.PhoneNumber?.toString() || "";
-    const accountRef = metadata.AccountReference;
-    const appointmentId = Number(accountRef);
-
-    if (isNaN(appointmentId) || appointmentId <= 0) {
-      console.error("Invalid appointmentId from M-Pesa:", accountRef);
-      res.status(400).json({ error: "Invalid appointment reference" });
-    }
 
     const transactionDate = metadata.TransactionDate
       ? new Date(
@@ -109,9 +131,11 @@ export const mpesaCallback = async (req: Request, res: Response) => {
       paymentDate: transactionDate.toISOString().split("T")[0],
     });
 
-   res.json({ message: "Callback processed successfully" });
+    res.json({ message: "Callback processed successfully" });
   } catch (error: any) {
     console.error("M-Pesa callback error:", error);
-    res.status(500).json({ error: "Failed to process callback" });
+    if (!res.headersSent) {
+     res.status(500).json({ error: "Failed to process callback" });
+    }
   }
 };
