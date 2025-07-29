@@ -26,8 +26,10 @@ export const generatePassword = (timestamp: string): string => {
 export const initiateSTKPush = async (
   phoneNumber: string,
   amount: number,
-  accountReference: string = "THERANOS"
+  accountReference: string
 ): Promise<any> => {
+  if (!accountReference) throw new Error("Account reference is required (appointmentId)");
+
   const accessToken = await getAccessToken();
   const timestamp = new Date().toISOString().replace(/[^0-9]/g, "").slice(0, -3);
   const password = generatePassword(timestamp);
@@ -44,14 +46,15 @@ export const initiateSTKPush = async (
       PartyB: SHORTCODE,
       PhoneNumber: phoneNumber,
       CallBackURL: "https://medical-appointment-patient-management.onrender.com/api/mpesa/callback",
-      AccountReference: accountReference,
-      TransactionDesc: "Medical Appointment Payment",
+      AccountReference: accountReference, // <-- NOW it will always be the appointmentId
+      TransactionDesc: `Payment for appointment ${accountReference}`,
     },
     { headers: { Authorization: `Bearer ${accessToken}` } }
   );
 
   return response.data;
 };
+
 
 // Generate QR Code
 export const generateQRCode = async (
