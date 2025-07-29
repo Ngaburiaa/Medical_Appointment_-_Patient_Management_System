@@ -46,7 +46,7 @@ export const initiateSTKPush = async (
       PartyB: SHORTCODE,
       PhoneNumber: phoneNumber,
       CallBackURL: "https://medical-appointment-patient-management.onrender.com/api/mpesa/callback",
-      AccountReference: accountReference, // <-- NOW it will always be the appointmentId
+      AccountReference: accountReference.toString(), // Ensure string value
       TransactionDesc: `Payment for appointment ${accountReference}`,
     },
     { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -54,7 +54,6 @@ export const initiateSTKPush = async (
 
   return response.data;
 };
-
 
 // Generate QR Code
 export const generateQRCode = async (
@@ -65,26 +64,33 @@ export const generateQRCode = async (
   const accessToken = await getAccessToken();
   const response = await axios.post(
     `${MPESA_BASE_URL}/mpesa/qrcode/v1/generate`,
-    { ShortCode: SHORTCODE, Amount: amount, AccountReference: accountReference, TransactionDesc: transactionDesc },
+    { 
+      ShortCode: SHORTCODE, 
+      Amount: amount, 
+      AccountReference: accountReference.toString(), // Ensure string value
+      TransactionDesc: transactionDesc 
+    },
     { headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" } }
   );
-  console.log("Saving payment:", response.data);
   return response.data;
 };
 
-
 export const createMpesaPaymentService = async (payment: TPaymentInsert): Promise<string> => {
   return await db.transaction(async (tx) => {
-    const appointmentId = Number(payment.appointmentId); 
+    const appointmentId = Number(payment.appointmentId);
 
-    if (!appointmentId || isNaN(appointmentId)) {
-      throw new Error("Invalid appointmentId for payment");
+    if (!appointmentId || isNaN(appointmentId) || appointmentId <= 0) {
+      throw new Error(`Invalid appointmentId: ${payment.appointmentId}`);
     }
 
     console.log(`Recording payment for appointment ${appointmentId}:`, payment);
 
     // 1. Save payment
-    await tx.insert(paymentsTable).values({ ...payment, appointmentId });
+    await tx.insert(paymentsTable).values({ 
+      ...payment, 
+      appointmentId,
+      amount: payment.amount.toString() // Ensure amount is stored as string
+    });
 
     // 2. If successful payment, update appointment status
     if (payment.paymentStatus === "SUCCESS") {
@@ -95,6 +101,6 @@ export const createMpesaPaymentService = async (payment: TPaymentInsert): Promis
       console.log(`Appointment ${appointmentId} marked as Confirmed`);
     }
 
-    return "M-Pesa payment recorded successfully 💰";
+    return "M-Pesa payment recorded successfully";
   });
 };
