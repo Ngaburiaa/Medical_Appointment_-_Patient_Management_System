@@ -1,6 +1,7 @@
 import axios from "axios";
 import db from "../drizzle/db";
-import { paymentsTable, TPaymentInsert } from "../drizzle/schema";
+import { appointmentsTable, paymentsTable, TPaymentInsert } from "../drizzle/schema";
+import { eq } from "drizzle-orm";
 
 const MPESA_BASE_URL = "https://sandbox.safaricom.co.ke";
 const { CONSUMER_KEY, CONSUMER_SECRET, SHORTCODE, PASSKEY } = process.env;
@@ -25,7 +26,7 @@ export const generatePassword = (timestamp: string): string => {
 export const initiateSTKPush = async (
   phoneNumber: string,
   amount: number,
-  accountReference: string = "GENERAL"
+  accountReference: string = "THERANOS"
 ): Promise<any> => {
   const accessToken = await getAccessToken();
   const timestamp = new Date().toISOString().replace(/[^0-9]/g, "").slice(0, -3);
@@ -43,7 +44,7 @@ export const initiateSTKPush = async (
       PartyB: SHORTCODE,
       PhoneNumber: phoneNumber,
       CallBackURL: "https://medical-appointment-patient-management.onrender.com/api/mpesa/callback",
-      AccountReference: "MEDICAL",
+      AccountReference: accountReference,
       TransactionDesc: "Medical Appointment Payment",
     },
     { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -69,8 +70,28 @@ export const generateQRCode = async (
 };
 
 
-// Insert payment (used by callback)
 export const createMpesaPaymentService = async (payment: TPaymentInsert): Promise<string> => {
-  await db.insert(paymentsTable).values(payment);
-  return "M-Pesa payment recorded successfully 💰";
+  return await db.transaction(async (tx) => {
+    const appointmentId = Number(payment.appointmentId); 
+
+    if (!appointmentId || isNaN(appointmentId)) {
+      throw new Error("Invalid appointmentId for payment");
+    }
+
+    console.log(`Recording payment for appointment ${appointmentId}:`, payment);
+
+    // 1. Save payment
+    await tx.insert(paymentsTable).values({ ...payment, appointmentId });
+
+    // 2. If successful payment, update appointment status
+    if (payment.paymentStatus === "SUCCESS") {
+      await tx
+        .update(appointmentsTable)
+        .set({ appointmentStatus: "Confirmed" })
+        .where(eq(appointmentsTable.appointmentId, appointmentId));
+      console.log(`Appointment ${appointmentId} marked as Confirmed`);
+    }
+
+    return "M-Pesa payment recorded successfully 💰";
+  });
 };

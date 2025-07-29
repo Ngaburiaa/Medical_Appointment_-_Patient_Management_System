@@ -5,14 +5,17 @@ import { initiateSTKPush, generateQRCode, createMpesaPaymentService } from "./mp
 export const initiatePayment = async (req: Request, res: Response) => {
   try {
     const { phoneNumber, amount, appointmentId } = req.body;
-    if (!phoneNumber || !amount) {
-       res.status(400).json({ error: "Phone number and amount are required" });
-       return;
+
+    if (!phoneNumber || !amount || !appointmentId) {
+      res.status(400).json({ error: "Phone number, amount, and appointmentId are required" });
+      return;
     }
-    const result = await initiateSTKPush(phoneNumber, amount, appointmentId?.toString() || "GENERAL");
+
+    
+    const result = await initiateSTKPush(phoneNumber, amount, appointmentId.toString());
     res.status(200).json(result);
   } catch (error: any) {
-    console.error(error);
+    console.error("STK Push Error:", error);
     res.status(500).json({
       error: "Failed to initiate payment",
       details: error.response?.data || error.message,
@@ -25,13 +28,14 @@ export const createQRCode = async (req: Request, res: Response) => {
   try {
     const { amount, accountReference, transactionDesc } = req.body;
     if (!amount || !accountReference || !transactionDesc) {
-     res.status(400).json({ error: "All fields are required" });
-     return;
+      res.status(400).json({ error: "Amount, accountReference, and transactionDesc are required" });
+      return;
     }
+
     const result = await generateQRCode(amount, accountReference, transactionDesc);
     res.status(200).json(result);
   } catch (error: any) {
-    console.error(error);
+    console.error("QR Code Error:", error);
     res.status(500).json({
       error: "Failed to generate QR code",
       details: error.response?.data || error.message,
@@ -43,6 +47,7 @@ export const createQRCode = async (req: Request, res: Response) => {
 export const mpesaCallback = async (req: Request, res: Response) => {
   try {
     console.log("M-Pesa Callback Received:", JSON.stringify(req.body, null, 2));
+
     const callback = req.body.Body.stkCallback;
     const { MerchantRequestID, CheckoutRequestID, ResultCode, ResultDesc, CallbackMetadata } = callback;
 
@@ -55,7 +60,15 @@ export const mpesaCallback = async (req: Request, res: Response) => {
     const amount = metadata.Amount || 0;
     const mpesaReceipt = metadata.MpesaReceiptNumber || "";
     const phone = metadata.PhoneNumber?.toString() || "";
-    const accountRef = metadata.AccountReference || null;
+    const accountRef = metadata.AccountReference;
+    const appointmentId = Number(accountRef);
+
+    if (isNaN(appointmentId) || appointmentId <= 0) {
+      console.error("Invalid appointmentId from M-Pesa:", accountRef);
+      res.status(400).json({ error: "Invalid appointment reference" });
+      return;
+    }
+
     const transactionDate = metadata.TransactionDate
       ? new Date(
           `${metadata.TransactionDate.toString().slice(0, 4)}-${metadata.TransactionDate
@@ -70,7 +83,7 @@ export const mpesaCallback = async (req: Request, res: Response) => {
 
     // Save payment
     await createMpesaPaymentService({
-      appointmentId: accountRef ? parseInt(accountRef) : 5, 
+      appointmentId,
       amount,
       paymentStatus: ResultCode === 0 ? "SUCCESS" : "FAILED",
       transactionId: mpesaReceipt,

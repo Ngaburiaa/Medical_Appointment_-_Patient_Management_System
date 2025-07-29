@@ -71,7 +71,6 @@ export const createPrescriptionItem = async (req: Request, res: Response) => {
     substitutionAllowed,
   } = req.body;
 
-  // Basic required field check
   if (
     !prescriptionId ||
     !drugName ||
