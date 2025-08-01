@@ -1,7 +1,6 @@
 import axios from "axios";
 import db from "../drizzle/db";
-import { appointmentsTable, paymentsTable, TPaymentInsert } from "../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { paymentsTable, TPaymentInsert } from "../drizzle/schema";
 
 const MPESA_BASE_URL = "https://sandbox.safaricom.co.ke";
 const { CONSUMER_KEY, CONSUMER_SECRET, SHORTCODE, PASSKEY } = process.env;
@@ -26,16 +25,11 @@ export const generatePassword = (timestamp: string): string => {
 export const initiateSTKPush = async (
   phoneNumber: string,
   amount: number,
-  appointmentId: string
+  accountReference: string = "GENERAL"
 ): Promise<any> => {
-  if (!appointmentId) throw new Error("Appointment ID is required");
-
   const accessToken = await getAccessToken();
   const timestamp = new Date().toISOString().replace(/[^0-9]/g, "").slice(0, -3);
   const password = generatePassword(timestamp);
-
-  // Encode appointmentId in CheckoutRequestID for fallback
-  const checkoutRequestId = `ws_CO_${timestamp}_${appointmentId}`;
 
   const response = await axios.post(
     `${MPESA_BASE_URL}/mpesa/stkpush/v1/processrequest`,
@@ -49,15 +43,14 @@ export const initiateSTKPush = async (
       PartyB: SHORTCODE,
       PhoneNumber: phoneNumber,
       CallBackURL: "https://medical-appointment-patient-management.onrender.com/api/mpesa/callback",
-      AccountReference: appointmentId, // Primary reference
-      TransactionDesc: `Payment for appointment ${appointmentId}`,
+      AccountReference: "MEDICAL",
+      TransactionDesc: "Medical Appointment Payment",
     },
     { headers: { Authorization: `Bearer ${accessToken}` } }
   );
 
   return response.data;
 };
-
 
 // Generate QR Code
 export const generateQRCode = async (
@@ -68,43 +61,16 @@ export const generateQRCode = async (
   const accessToken = await getAccessToken();
   const response = await axios.post(
     `${MPESA_BASE_URL}/mpesa/qrcode/v1/generate`,
-    { 
-      ShortCode: SHORTCODE, 
-      Amount: amount, 
-      AccountReference: accountReference.toString(), // Ensure string value
-      TransactionDesc: transactionDesc 
-    },
+    { ShortCode: SHORTCODE, Amount: amount, AccountReference: accountReference, TransactionDesc: transactionDesc },
     { headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" } }
   );
+  console.log("Saving payment:", response.data);
   return response.data;
 };
 
+
+// Insert payment (used by callback)
 export const createMpesaPaymentService = async (payment: TPaymentInsert): Promise<string> => {
-  return await db.transaction(async (tx) => {
-    const appointmentId = Number(payment.appointmentId);
-
-    if (!appointmentId || isNaN(appointmentId) || appointmentId <= 0) {
-      throw new Error(`Invalid appointmentId: ${payment.appointmentId}`);
-    }
-
-    console.log(`Recording payment for appointment ${appointmentId}:`, payment);
-
-    // 1. Save payment
-    await tx.insert(paymentsTable).values({ 
-      ...payment, 
-      appointmentId,
-      amount: payment.amount.toString() // Ensure amount is stored as string
-    });
-
-    // 2. If successful payment, update appointment status
-    if (payment.paymentStatus === "SUCCESS") {
-      await tx
-        .update(appointmentsTable)
-        .set({ appointmentStatus: "Confirmed" })
-        .where(eq(appointmentsTable.appointmentId, appointmentId));
-      console.log(`Appointment ${appointmentId} marked as Confirmed`);
-    }
-
-    return "M-Pesa payment recorded successfully";
-  });
+  await db.insert(paymentsTable).values(payment);
+  return "M-Pesa payment recorded successfully 💰";
 };
